@@ -331,11 +331,11 @@ class NghSampler2 (nn.Module):
 
         # sample features from first image
         if type(feat1) == list or type(conf1) == list:
-            print("WTF")
+            print("WTF", type(feat1))
             print(feat1, conf1, x1)
             for x in feat1:
                 print(x.shape)
-            
+
 
         feat1 = feat1[b1, :, y1, x1]
         qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
