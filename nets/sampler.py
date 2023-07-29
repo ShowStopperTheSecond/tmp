@@ -321,65 +321,78 @@ class NghSampler2 (nn.Module):
     def forward(self, feats, confs, aflow, **kw):
         B, two, H, W = aflow.shape
         assert two == 2
-        feat1, conf1 = feats[0], (confs[0] if confs else None)
-        feat2, conf2 = feats[1], (confs[1] if confs else None)
-        
+        feats1, conf1 = feats[0], (confs[0] if confs else None)
+        feats2, conf2 = feats[1], (confs[1] if confs else None)
+        all_scores = []
+        all_gt = []
+        all_masks = []
+        all_qconf = []
         # positions in the first image
         b1, y1, x1, shape = self.gen_grid(self.sub_q, aflow)
+        for feat1, feat2 in zip(feats1, feats2):
+            # sample features from first image
+            feat1 = feat1[b1, :, y1, x1]
+            qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
 
-        # sample features from first image
-        feat1 = feat1[b1, :, y1, x1]
-        qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
-        
-        #sample GT from second image
-        b2 = b1
-        xy2 = (aflow[b1, :, y1, x1] + 0.5).long().t()
-        mask = (0 <= xy2[0]) * (0 <= xy2[1]) * (xy2[0] < W) * (xy2[1] < H)
-        mask = mask.view(shape)
-        
-        def clamp(xy):
-            torch.clamp(xy[0], 0, W-1, out=xy[0])
-            torch.clamp(xy[1], 0, H-1, out=xy[1])
-            return xy
-        
-        # compute positive scores
-        xy2p = clamp(xy2[:,None,:] + self.pos_offsets[:,:,None])
-        pscores = (feat1[None,:,:] * feat2[b2, :, xy2p[1], xy2p[0]]).sum(dim=-1).t()
-#        xy1p = clamp(torch.stack((x1,y1))[:,None,:] + self.pos_offsets[:,:,None])
-#        grid = FullSampler._aflow_to_grid(aflow)
-#        feat2p = F.grid_sample(feat2, grid, mode='bilinear', padding_mode='border')
-#        pscores = (feat1[None,:,:] * feat2p[b1,:,xy1p[1], xy1p[0]]).sum(dim=-1).t()
-        if self.maxpool_pos:
-            pscores, pos = pscores.max(dim=1, keepdim=True)
-            if confs: 
-                sel = clamp(xy2 + self.pos_offsets[:,pos.view(-1)])
-                qconf = (qconf + conf2[b2, :, sel[1], sel[0]].view(shape))/2
-        
-        # compute negative scores
-        xy2n = clamp(xy2[:,None,:] + self.neg_offsets[:,:,None])
-        nscores = (feat1[None,:,:] * feat2[b2, :, xy2n[1], xy2n[0]]).sum(dim=-1).t()
+            #sample GT from second image
+            b2 = b1
+            xy2 = (aflow[b1, :, y1, x1] + 0.5).long().t()
+            mask = (0 <= xy2[0]) * (0 <= xy2[1]) * (xy2[0] < W) * (xy2[1] < H)
+            mask = mask.view(shape)
 
-        if self.sub_d_neg:
-            # add distractors from a grid
-            b3, y3, x3, _ = self.gen_grid(self.sub_d_neg, aflow)
-            distractors = feat2[b3, :, y3, x3]
-            dscores = torch.matmul(feat1, distractors.t())
-            del distractors
-            
-            # remove scores that corresponds to positives or nulls
-            dis2 = (x3 - xy2[0][:,None])**2 + (y3 - xy2[1][:,None])**2
-            dis2 += (b3 != b2[:,None]).long() * self.neg_d**2
-            dscores[dis2 < self.neg_d**2] = 0
-            
-            scores = torch.cat((pscores, nscores, dscores), dim=1)
-        else:
-            # concat everything
-            scores = torch.cat((pscores, nscores), dim=1)
+            def clamp(xy):
+                torch.clamp(xy[0], 0, W-1, out=xy[0])
+                torch.clamp(xy[1], 0, H-1, out=xy[1])
+                return xy
 
-        gt = scores.new_zeros(scores.shape, dtype=torch.uint8)
-        gt[:, :pscores.shape[1]] = 1
+            # compute positive scores
+            xy2p = clamp(xy2[:,None,:] + self.pos_offsets[:,:,None])
+            pscores = (feat1[None,:,:] * feat2[b2, :, xy2p[1], xy2p[0]]).sum(dim=-1).t()
+    #        xy1p = clamp(torch.stack((x1,y1))[:,None,:] + self.pos_offsets[:,:,None])
+    #        grid = FullSampler._aflow_to_grid(aflow)
+    #        feat2p = F.grid_sample(feat2, grid, mode='bilinear', padding_mode='border')
+    #        pscores = (feat1[None,:,:] * feat2p[b1,:,xy1p[1], xy1p[0]]).sum(dim=-1).t()
+            if self.maxpool_pos:
+                pscores, pos = pscores.max(dim=1, keepdim=True)
+                if confs:
+                    sel = clamp(xy2 + self.pos_offsets[:,pos.view(-1)])
+                    qconf = (qconf + conf2[b2, :, sel[1], sel[0]].view(shape))/2
 
+            # compute negative scores
+            xy2n = clamp(xy2[:,None,:] + self.neg_offsets[:,:,None])
+            nscores = (feat1[None,:,:] * feat2[b2, :, xy2n[1], xy2n[0]]).sum(dim=-1).t()
+
+            if self.sub_d_neg:
+                # add distractors from a grid
+                b3, y3, x3, _ = self.gen_grid(self.sub_d_neg, aflow)
+                distractors = feat2[b3, :, y3, x3]
+                dscores = torch.matmul(feat1, distractors.t())
+                del distractors
+
+                # remove scores that corresponds to positives or nulls
+                dis2 = (x3 - xy2[0][:,None])**2 + (y3 - xy2[1][:,None])**2
+                dis2 += (b3 != b2[:,None]).long() * self.neg_d**2
+                dscores[dis2 < self.neg_d**2] = 0
+
+                scores = torch.cat((pscores, nscores, dscores), dim=1)
+            else:
+                # concat everything
+                scores = torch.cat((pscores, nscores), dim=1)
+
+            gt = scores.new_zeros(scores.shape, dtype=torch.uint8)
+            gt[:, :pscores.shape[1]] = 1
+            all_scores.append(scores)
+            all_gt.append(gt)
+            all_masks.append(mask)
+            all_qconf.append(qconf)
+
+        scores = torch.cat(all_scores)
+        gt = torch.cat((all_gt))
+        mask = torch.cat(all_masks)
+        qconf = torch.cat(all_qconf)
         return scores, gt, mask, qconf
+        # return all_scores, all_gt, all_masks, all_qconf
+
 
 
 
