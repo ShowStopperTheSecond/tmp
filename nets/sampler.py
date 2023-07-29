@@ -329,7 +329,11 @@ class NghSampler2 (nn.Module):
         all_qconf = []
         # positions in the first image
         b1, y1, x1, shape = self.gen_grid(self.sub_q, aflow)
-        for feat1, feat2 in zip(feats1, feats2):
+        if type(feats1) != list:
+            collection = zip([feats1], [feats2])
+        else:
+            collection = zip( feats1, feats2)
+        for feat1, feat2 in collection:
             # sample features from first image
             feat1 = feat1[b1, :, y1, x1]
             qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
