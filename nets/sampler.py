@@ -374,7 +374,9 @@ class NghSampler2 (nn.Module):
         else:
             # concat everything
             scores = torch.cat((pscores, nscores), dim=1)
-
+        
+        gt = scores.new_zeros(scores.shape, dtype=torch.uint8)
+        gt[:, :pscores.shape[1]] = 1
         return scores, gt, mask, qconf
         # return all_scores, all_gt, all_masks, all_qconf
 
