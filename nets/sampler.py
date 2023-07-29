@@ -529,6 +529,7 @@ class NghSampler2MultiDescriptor (nn.Module):
 
             gt = scores.new_zeros(scores.shape, dtype=torch.uint8)
             gt[:, :pscores.shape[1]] = 1
+            
             all_scores.append(scores)
             all_gt.append(gt)
             all_masks.append(mask)

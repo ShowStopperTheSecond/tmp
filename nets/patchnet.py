@@ -151,11 +151,11 @@ class Custom_Quad_L2Net (PatchNet):
     """
     def __init__(self, dim=128, mchan=4, relu22=False, **kw ):
         PatchNet.__init__(self, **kw)
-        self._add_conv(  8*mchan, relu=True, gcu=False)
-        self._add_conv(  8*mchan,relu=True, gcu=False)
-        self._add_conv( 16*mchan, stride=2,relu=True, gcu=False)
-        self._add_conv( 16*mchan,relu=True, gcu=False)
-        self._add_conv( 32*mchan, stride=2,relu=True, gcu=False)
+        self._add_conv(  8*mchan, relu=False, gcu=True)
+        self._add_conv(  8*mchan,relu=False, gcu=True)
+        self._add_conv( 16*mchan, stride=2,relu=False, gcu=True)
+        self._add_conv( 16*mchan,relu=False, gcu=True)
+        self._add_conv( 32*mchan, stride=2,relu=False, gcu=True)
         # self._add_conv( 32*mchan)
         # replace last 8x8 convolution with 3 2x2 convolutions
         # self._add_conv( 32*mchan, k=2, stride=2, relu=relu22)
