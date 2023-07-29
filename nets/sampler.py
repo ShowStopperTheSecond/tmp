@@ -330,10 +330,10 @@ class NghSampler2 (nn.Module):
         b1, y1, x1, shape = self.gen_grid(self.sub_q, aflow)
 
         # sample features from first image
-        if type(b1) == tuple or type(y1) == tuple or type(x1) ==tuple:
+        if type(feat1) == list or type(conf1) == list:
             print("WTF")
-            print(b1, y1, x1)
-            
+            print(feat1, conf1, x1)
+
         feat1 = feat1[b1, :, y1, x1]
         qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
         
