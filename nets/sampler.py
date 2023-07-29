@@ -535,7 +535,7 @@ class NghSampler2MultiDescriptor (nn.Module):
             all_qconf.append(qconf)
 
         scores = torch.cat(all_scores)
-        gt = torch.cat((all_gt))
+        gt = torch.cat(all_gt)
         mask = torch.cat(all_masks)
         qconf = torch.cat(all_qconf)
         return scores, gt, mask, qconf
