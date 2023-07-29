@@ -249,6 +249,7 @@ class FarNearSampler (FullSampler):
                 msk1, conf1 if confs else None)
 
 
+
 class NghSampler2 (nn.Module):
     """ Similar to NghSampler, but doesnt warp the 2nd image.
     Distance to GT =>  0 ... pos_d ... neg_d ... ngh
@@ -323,24 +324,25 @@ class NghSampler2 (nn.Module):
         assert two == 2
         feat1, conf1 = feats[0], (confs[0] if confs else None)
         feat2, conf2 = feats[1], (confs[1] if confs else None)
-
+        
         # positions in the first image
         b1, y1, x1, shape = self.gen_grid(self.sub_q, aflow)
-             # sample features from first image
+
+        # sample features from first image
         feat1 = feat1[b1, :, y1, x1]
         qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
-
+        
         #sample GT from second image
         b2 = b1
         xy2 = (aflow[b1, :, y1, x1] + 0.5).long().t()
         mask = (0 <= xy2[0]) * (0 <= xy2[1]) * (xy2[0] < W) * (xy2[1] < H)
         mask = mask.view(shape)
-
+        
         def clamp(xy):
             torch.clamp(xy[0], 0, W-1, out=xy[0])
             torch.clamp(xy[1], 0, H-1, out=xy[1])
             return xy
-
+        
         # compute positive scores
         xy2p = clamp(xy2[:,None,:] + self.pos_offsets[:,:,None])
         pscores = (feat1[None,:,:] * feat2[b2, :, xy2p[1], xy2p[0]]).sum(dim=-1).t()
@@ -350,10 +352,10 @@ class NghSampler2 (nn.Module):
 #        pscores = (feat1[None,:,:] * feat2p[b1,:,xy1p[1], xy1p[0]]).sum(dim=-1).t()
         if self.maxpool_pos:
             pscores, pos = pscores.max(dim=1, keepdim=True)
-            if confs:
+            if confs: 
                 sel = clamp(xy2 + self.pos_offsets[:,pos.view(-1)])
                 qconf = (qconf + conf2[b2, :, sel[1], sel[0]].view(shape))/2
-
+        
         # compute negative scores
         xy2n = clamp(xy2[:,None,:] + self.neg_offsets[:,:,None])
         nscores = (feat1[None,:,:] * feat2[b2, :, xy2n[1], xy2n[0]]).sum(dim=-1).t()
@@ -364,23 +366,23 @@ class NghSampler2 (nn.Module):
             distractors = feat2[b3, :, y3, x3]
             dscores = torch.matmul(feat1, distractors.t())
             del distractors
-
+            
             # remove scores that corresponds to positives or nulls
             dis2 = (x3 - xy2[0][:,None])**2 + (y3 - xy2[1][:,None])**2
             dis2 += (b3 != b2[:,None]).long() * self.neg_d**2
             dscores[dis2 < self.neg_d**2] = 0
-
+            
             scores = torch.cat((pscores, nscores, dscores), dim=1)
         else:
             # concat everything
             scores = torch.cat((pscores, nscores), dim=1)
-        
+
         gt = scores.new_zeros(scores.shape, dtype=torch.uint8)
         gt[:, :pscores.shape[1]] = 1
+
         return scores, gt, mask, qconf
-        # return all_scores, all_gt, all_masks, all_qconf
 
-
+        
 
 
 class NghSampler2MultiDescriptor (nn.Module):
