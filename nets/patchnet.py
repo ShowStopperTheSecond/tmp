@@ -74,7 +74,7 @@ class PatchNet (BaseNet):
     def _make_bn(self, outd):
         return nn.BatchNorm2d(outd, affine=self.bn_affine)
 
-    def _add_conv(self, outd, k=3, stride=1, dilation=1, bn=True, relu=False, gcu=True, k_pool = 1, pool_type='max'):
+    def _add_conv(self, outd, k=3, stride=1, dilation=1, bn=True, relu=True, gcu=False, k_pool = 1, pool_type='max'):
         # as in the original implementation, dilation is applied at the end of layer, so it will have impact only from next layer
         d = self.dilation * dilation
         if self.dilated: 
