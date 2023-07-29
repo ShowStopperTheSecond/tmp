@@ -327,7 +327,7 @@ class SAR_OpticalFlow(SARImages_DB, PairDataset):
         all_image_sets = []
         for set_img  in os.listdir(root):
             for path, _, files in os.walk(os.path.join(root, set_img)):
-                file_path = [os.path.join(path, f) for f in files]
+                file_path = [os.path.join(path, f) for f in files if f[-3:].lower() in ["png", "jpg"]]
                 self.nimg += 1
                 if len(file_path)>0 :
                     all_image_sets.append(file_path)
