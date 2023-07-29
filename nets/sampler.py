@@ -320,6 +320,7 @@ class NghSampler2 (nn.Module):
         return b1, y1, x1, shape
 
     def forward(self, feats, confs, aflow, **kw):
+        print("*******")
         B, two, H, W = aflow.shape
         assert two == 2
         feat1, conf1 = feats[0], (confs[0] if confs else None)
@@ -382,7 +383,7 @@ class NghSampler2 (nn.Module):
 
         return scores, gt, mask, qconf
 
-        
+
 
 
 class NghSampler2MultiDescriptor (nn.Module):
