@@ -321,6 +321,142 @@ class NghSampler2 (nn.Module):
     def forward(self, feats, confs, aflow, **kw):
         B, two, H, W = aflow.shape
         assert two == 2
+        feat1, conf1 = feats[0], (confs[0] if confs else None)
+        feat2, conf2 = feats[1], (confs[1] if confs else None)
+
+        # positions in the first image
+        b1, y1, x1, shape = self.gen_grid(self.sub_q, aflow)
+             # sample features from first image
+        feat1 = feat1[b1, :, y1, x1]
+        qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
+
+        #sample GT from second image
+        b2 = b1
+        xy2 = (aflow[b1, :, y1, x1] + 0.5).long().t()
+        mask = (0 <= xy2[0]) * (0 <= xy2[1]) * (xy2[0] < W) * (xy2[1] < H)
+        mask = mask.view(shape)
+
+        def clamp(xy):
+            torch.clamp(xy[0], 0, W-1, out=xy[0])
+            torch.clamp(xy[1], 0, H-1, out=xy[1])
+            return xy
+
+        # compute positive scores
+        xy2p = clamp(xy2[:,None,:] + self.pos_offsets[:,:,None])
+        pscores = (feat1[None,:,:] * feat2[b2, :, xy2p[1], xy2p[0]]).sum(dim=-1).t()
+#        xy1p = clamp(torch.stack((x1,y1))[:,None,:] + self.pos_offsets[:,:,None])
+#        grid = FullSampler._aflow_to_grid(aflow)
+#        feat2p = F.grid_sample(feat2, grid, mode='bilinear', padding_mode='border')
+#        pscores = (feat1[None,:,:] * feat2p[b1,:,xy1p[1], xy1p[0]]).sum(dim=-1).t()
+        if self.maxpool_pos:
+            pscores, pos = pscores.max(dim=1, keepdim=True)
+            if confs:
+                sel = clamp(xy2 + self.pos_offsets[:,pos.view(-1)])
+                qconf = (qconf + conf2[b2, :, sel[1], sel[0]].view(shape))/2
+
+        # compute negative scores
+        xy2n = clamp(xy2[:,None,:] + self.neg_offsets[:,:,None])
+        nscores = (feat1[None,:,:] * feat2[b2, :, xy2n[1], xy2n[0]]).sum(dim=-1).t()
+
+        if self.sub_d_neg:
+            # add distractors from a grid
+            b3, y3, x3, _ = self.gen_grid(self.sub_d_neg, aflow)
+            distractors = feat2[b3, :, y3, x3]
+            dscores = torch.matmul(feat1, distractors.t())
+            del distractors
+
+            # remove scores that corresponds to positives or nulls
+            dis2 = (x3 - xy2[0][:,None])**2 + (y3 - xy2[1][:,None])**2
+            dis2 += (b3 != b2[:,None]).long() * self.neg_d**2
+            dscores[dis2 < self.neg_d**2] = 0
+
+            scores = torch.cat((pscores, nscores, dscores), dim=1)
+        else:
+            # concat everything
+            scores = torch.cat((pscores, nscores), dim=1)
+
+        scores = torch.cat(all_scores)
+        gt = torch.cat((all_gt))
+        mask = torch.cat(all_masks)
+        qconf = torch.cat(all_qconf)
+        return scores, gt, mask, qconf
+        # return all_scores, all_gt, all_masks, all_qconf
+
+
+
+
+class NghSampler2MultiDescriptor (nn.Module):
+    """ Similar to NghSampler, but doesnt warp the 2nd image.
+    Distance to GT =>  0 ... pos_d ... neg_d ... ngh
+    Pixel label    =>  + + + + + + 0 0 - - - - - - -
+    
+    Subsample on query side: if > 0, regular grid
+                                < 0, random points 
+    In both cases, the number of query points is = W*H/subq**2
+    """
+    def __init__(self, ngh, subq=1, subd=1, pos_d=0, neg_d=2, border=None,
+                       maxpool_pos=True, subd_neg=0):
+        nn.Module.__init__(self)
+        assert 0 <= pos_d < neg_d <= (ngh if ngh else 99)
+        self.ngh = ngh
+        self.pos_d = pos_d
+        self.neg_d = neg_d
+        assert subd <= ngh or ngh == 0
+        assert subq != 0
+        self.sub_q = subq
+        self.sub_d = subd
+        self.sub_d_neg = subd_neg
+        if border is None: border = ngh
+        assert border >= ngh, 'border has to be larger than ngh'
+        self.border = border
+        self.maxpool_pos = maxpool_pos
+        self.precompute_offsets()
+
+    def precompute_offsets(self):
+        pos_d2 = self.pos_d**2
+        neg_d2 = self.neg_d**2
+        rad2 = self.ngh**2
+        rad = (self.ngh//self.sub_d) * self.ngh # make an integer multiple
+        pos = []
+        neg = []
+        for j in range(-rad, rad+1, self.sub_d):
+          for i in range(-rad, rad+1, self.sub_d):
+            d2 = i*i + j*j
+            if d2 <= pos_d2:
+                pos.append( (i,j) )
+            elif neg_d2 <= d2 <= rad2: 
+                neg.append( (i,j) )
+
+        self.register_buffer('pos_offsets', torch.LongTensor(pos).view(-1,2).t())
+        self.register_buffer('neg_offsets', torch.LongTensor(neg).view(-1,2).t())
+
+    def gen_grid(self, step, aflow):
+        B, two, H, W = aflow.shape
+        dev = aflow.device
+        b1 = torch.arange(B, device=dev)
+        if step > 0:
+            # regular grid
+            x1 = torch.arange(self.border, W-self.border, step, device=dev)
+            y1 = torch.arange(self.border, H-self.border, step, device=dev)
+            H1, W1 = len(y1), len(x1)
+            x1 = x1[None,None,:].expand(B,H1,W1).reshape(-1)
+            y1 = y1[None,:,None].expand(B,H1,W1).reshape(-1)
+            b1 = b1[:,None,None].expand(B,H1,W1).reshape(-1)
+            shape = (B, H1, W1)
+        else:
+            # randomly spread
+            n = (H - 2*self.border) * (W - 2*self.border) // step**2
+            x1 = torch.randint(self.border, W-self.border, (n,), device=dev)
+            y1 = torch.randint(self.border, H-self.border, (n,), device=dev)
+            x1 = x1[None,:].expand(B,n).reshape(-1)
+            y1 = y1[None,:].expand(B,n).reshape(-1)
+            b1 = b1[:,None].expand(B,n).reshape(-1)
+            shape = (B, n)
+        return b1, y1, x1, shape
+
+    def forward(self, feats, confs, aflow, **kw):
+        B, two, H, W = aflow.shape
+        assert two == 2
         feats1, conf1 = feats[0], (confs[0] if confs else None)
         feats2, conf2 = feats[1], (confs[1] if confs else None)
         all_scores = []
@@ -332,7 +468,7 @@ class NghSampler2 (nn.Module):
         if type(feats1) != list:
             collection = zip([feats1], [feats2])
         else:
-            collection = zip( feats1, feats2)
+            collection = zip(feats1, feats2)
         for feat1, feat2 in collection:
             # sample features from first image
             feat1 = feat1[b1, :, y1, x1]
