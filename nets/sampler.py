@@ -375,10 +375,6 @@ class NghSampler2 (nn.Module):
             # concat everything
             scores = torch.cat((pscores, nscores), dim=1)
 
-        scores = torch.cat(all_scores)
-        gt = torch.cat((all_gt))
-        mask = torch.cat(all_masks)
-        qconf = torch.cat(all_qconf)
         return scores, gt, mask, qconf
         # return all_scores, all_gt, all_masks, all_qconf
 
