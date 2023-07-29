@@ -313,12 +313,12 @@ class SARImages_DB (SARImages):
         return os.path.split( self.imgs[idx][:-4] )[1]
 
 
-class SAR_OpticalFlow(SARImages_DB, PairDataset):
+class SAR_OpticalFlow( PairDataset):
     """ Image pairs from Aachen db with optical flow.
     """
     def __init__(self, root='data/sar/optical_flow', **kw):
         PairDataset.__init__(self)
-        SARImages_DB.__init__(self, **kw)
+        # SARImages_DB.__init__(self, **kw)
         self.root_flow = root
         self.random_affine = RandomAffine(degrees=10, translate=(.05, .05), scale=(.8, 1), shear=(.1, .1), patch_translate=((.2, 0.8), (.2, 0.8)))
         self.patch_radius = 128
