@@ -201,7 +201,8 @@ class Custom_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
         assert self.ops, "You need to add convolutions first"
         descriptors = []
         for op in self.ops:
-            if op._get_name() == "ReLU":
+            # if op._get_name() == "ReLU":
+            if op._get_name() == "GrowingCosineUnit":
                 descriptors.append(x)
             x = op(x)
 
