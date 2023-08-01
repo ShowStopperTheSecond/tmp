@@ -210,7 +210,7 @@ class Custom_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize(descriptors[3:], ureliability, urepeatability)
+        return self.normalize(descriptors[-1:], ureliability, urepeatability)
 
 
 
