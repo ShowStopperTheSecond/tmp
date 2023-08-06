@@ -18,6 +18,44 @@ class GrowingCosineUnit(torch.nn.Module):
 
 
 
+# class BaseNet (nn.Module):
+#     """ Takes a list of images as input, and returns for each image:
+#         - a pixelwise descriptor
+#         - a pixelwise confidence
+#     """
+#     def softmax(self, ux):
+#         if ux.shape[1] == 1:
+#             x = F.softplus(ux)
+#             return x / (1 + x)  # for sure in [0,1], much less plateaus than softmax
+#         elif ux.shape[1] == 2:
+#             return F.softmax(ux, dim=1)[:,1:2]
+
+#     def normalize(self, x, ureliability, urepeatability):
+#         if len(x) == 2:
+#             ret_val = dict(descriptors = F.normalize(x, p=2, dim=1),
+#                     repeatability = self.softmax( urepeatability ),
+#                     reliability = self.softmax( ureliability ))
+#         else:
+#             normalized_xs = []
+#             for feats in x:
+#                 normalized_xs.append( F.normalize(feats, p=2, dim=1))
+#             ret_val = dict(descriptors = normalized_xs,
+#                     repeatability = self.softmax( urepeatability ),
+#                     reliability = self.softmax( ureliability ))
+
+
+#         return  ret_val
+
+#     def forward_one(self, x):
+#         raise NotImplementedError()
+
+#     def forward(self, imgs, **kw):
+#         res = [self.forward_one(img) for img in imgs]
+#         # merge all dictionaries into one
+#         res = {k:[r[k] for r in res if k in r] for k in {k for r in res for k in r}}
+#         return dict(res, imgs=imgs, **kw)
+
+
 class BaseNet (nn.Module):
     """ Takes a list of images as input, and returns for each image:
         - a pixelwise descriptor
@@ -31,20 +69,9 @@ class BaseNet (nn.Module):
             return F.softmax(ux, dim=1)[:,1:2]
 
     def normalize(self, x, ureliability, urepeatability):
-        if len(x) == 2:
-            ret_val = dict(descriptors = F.normalize(x, p=2, dim=1),
+        return dict(descriptors = F.normalize(x, p=2, dim=1),
                     repeatability = self.softmax( urepeatability ),
                     reliability = self.softmax( ureliability ))
-        else:
-            normalized_xs = []
-            for feats in x:
-                normalized_xs.append( F.normalize(feats, p=2, dim=1))
-            ret_val = dict(descriptors = normalized_xs,
-                    repeatability = self.softmax( urepeatability ),
-                    reliability = self.softmax( ureliability ))
-
-
-        return  ret_val
 
     def forward_one(self, x):
         raise NotImplementedError()
