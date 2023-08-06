@@ -125,6 +125,8 @@ class L2_Net (PatchNet):
         self.out_dim = dim
 
 
+
+
 class Quad_L2Net (PatchNet):
     """ Same than L2_Net, but replace the final 8x8 conv by 3 successive 2x2 convs.
     """
@@ -141,6 +143,28 @@ class Quad_L2Net (PatchNet):
         self._add_conv( 32*mchan, k=2, stride=2, relu=relu22)
         self._add_conv(dim, k=2, stride=2, bn=False, relu=False)
         self.out_dim = dim
+
+
+
+class Quad_L2Net_ConfCFS (Quad_L2Net):
+    """ Same than Quad_L2Net, with 2 confidence maps for repeatability and reliability.
+    """
+    def __init__(self, **kw ):
+        Quad_L2Net.__init__(self, **kw)
+        # reliability classifier
+        self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
+        # repeatability classifier: for some reasons it's a softplus, not a softmax!
+        # Why? I guess it's a mistake that was left unnoticed in the code for a long time...
+        self.sal = nn.Conv2d(self.out_dim, 1, kernel_size=1) 
+
+    def forward_one(self, x):
+        assert self.ops, "You need to add convolutions first"
+        for op in self.ops:
+            x = op(x)
+        # compute the confidence maps
+        ureliability = self.clf(x**2)
+        urepeatability = self.sal(x**2)
+        return self.normalize(x, ureliability, urepeatability)
 
 
 
@@ -163,26 +187,6 @@ class Custom_Quad_L2Net (PatchNet):
         self._add_conv(dim, k=2, stride=2, bn=False, relu=False)
         self.out_dim = dim
 
-
-class Quad_L2Net_ConfCFS (Quad_L2Net):
-    """ Same than Quad_L2Net, with 2 confidence maps for repeatability and reliability.
-    """
-    def __init__(self, **kw ):
-        Quad_L2Net.__init__(self, **kw)
-        # reliability classifier
-        self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
-        # repeatability classifier: for some reasons it's a softplus, not a softmax!
-        # Why? I guess it's a mistake that was left unnoticed in the code for a long time...
-        self.sal = nn.Conv2d(self.out_dim, 1, kernel_size=1) 
-
-    def forward_one(self, x):
-        assert self.ops, "You need to add convolutions first"
-        for op in self.ops:
-            x = op(x)
-        # compute the confidence maps
-        ureliability = self.clf(x**2)
-        urepeatability = self.sal(x**2)
-        return self.normalize(x, ureliability, urepeatability)
 
 
 
