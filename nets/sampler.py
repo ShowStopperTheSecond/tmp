@@ -320,7 +320,6 @@ class NghSampler2 (nn.Module):
         return b1, y1, x1, shape
 
     def forward(self, feats, confs, aflow, **kw):
-        # print("*******")
         B, two, H, W = aflow.shape
         assert two == 2
         feat1, conf1 = feats[0], (confs[0] if confs else None)
@@ -330,13 +329,6 @@ class NghSampler2 (nn.Module):
         b1, y1, x1, shape = self.gen_grid(self.sub_q, aflow)
 
         # sample features from first image
-        if type(feat1) == list or type(conf1) == list:
-            print("WTF", type(feat1))
-            print(feat1, conf1, x1)
-            for x in feat1:
-                print(x.shape)
-
-
         feat1 = feat1[b1, :, y1, x1]
         qconf = conf1[b1, :, y1, x1].view(shape) if confs else None
         
@@ -389,6 +381,7 @@ class NghSampler2 (nn.Module):
         gt[:, :pscores.shape[1]] = 1
 
         return scores, gt, mask, qconf
+
 
 
 
