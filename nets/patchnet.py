@@ -73,6 +73,20 @@ class BaseNet (nn.Module):
                     repeatability = self.softmax( urepeatability ),
                     reliability = self.softmax( ureliability ))
 
+    def normalize2(self, x, ureliability, urepeatability):
+        if len(x) == 2:
+            ret_val = dict(descriptors = F.normalize(x, p=2, dim=1),
+                    repeatability = self.softmax( urepeatability ),
+                    reliability = self.softmax( ureliability ))
+        else:
+            normalized_xs = []
+            for feats in x:
+                normalized_xs.append( F.normalize(feats, p=2, dim=1))
+            ret_val = dict(descriptors = normalized_xs,
+                    repeatability = self.softmax( urepeatability ),
+                    reliability = self.softmax( ureliability ))
+
+
     def forward_one(self, x):
         raise NotImplementedError()
 
@@ -243,6 +257,33 @@ class Custom_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
 
         return self.normalize(x, ureliability, urepeatability)
 
+
+
+lass Custom_2_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
+    """ Same than Quad_L2Net, with 2 confidence maps for repeatability and reliability.
+    """
+    def __init__(self, **kw ):
+        Custom_Quad_L2Net.__init__(self, **kw)
+        # reliability classifier
+        self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
+        # repeatability classifier: for some reasons it's a softplus, not a softmax!
+        # Why? I guess it's a mistake that was left unnoticed in the code for a long time...
+        self.sal = nn.Conv2d(self.out_dim, 1, kernel_size=1)
+
+    def forward_one(self, x):
+        assert self.ops, "You need to add convolutions first"
+        descriptors = []
+        for op in self.ops:
+            # if op._get_name() == "ReLU":
+            if op._get_name() == "GrowingCosineUnit":
+                descriptors.append(x)
+            x = op(x)
+
+        # compute the confidence maps
+        ureliability = self.clf(x**2)
+        urepeatability = self.sal(x**2)
+
+        return self.normalize(x, ureliability, urepeatability)
 
 
 
