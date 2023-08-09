@@ -259,7 +259,7 @@ class Custom_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
 
 
 
-lass Custom_2_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
+class Custom_2_Quad_L2Net_ConfCFS(Custom_Quad_L2Net):
     """ Same than Quad_L2Net, with 2 confidence maps for repeatability and reliability.
     """
     def __init__(self, **kw ):
@@ -283,7 +283,7 @@ lass Custom_2_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize(x, ureliability, urepeatability)
+        return self.normalize2(x, ureliability, urepeatability)
 
 
 
