@@ -337,7 +337,7 @@ class Fast_Quad_L2Net_ConfCFS (Fast_Quad_L2Net):
 
 
 
-lass Custom_3_Fast_Quad_L2Net (PatchNet):
+class Custom_3_Fast_Quad_L2Net (PatchNet):
     """ Faster version of Quad l2 net, replacing one dilated conv with one pooling to diminish image resolution thus increase inference time
     Dilation  factors and pooling:
         1,1,1, pool2, 1,1, 2,2, 4, 8, upsample2
