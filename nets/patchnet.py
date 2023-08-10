@@ -368,7 +368,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
-        Fast_Quad_L2Net.__init__(self, **kw)
+        Custom_3_Fast_Quad_L2Net.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         
