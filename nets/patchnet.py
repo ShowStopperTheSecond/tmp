@@ -243,18 +243,18 @@ class Custom_Quad_L2Net_ConfCFS (Quad_L2Net):
 
     def forward_one(self, x):
         assert self.ops, "You need to add convolutions first"
-        # descriptors = []
+        descriptors = []
         for op in self.ops:
             if op._get_name() == "ReLU":
             # if op._get_name() == "GrowingCosineUnit":
-                # descriptors.append(x)
+                descriptors.append(x)
             x = op(x)
 
         # compute the confidence maps
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize(x, ureliability, urepeatability)
+        return self.normalize2(descriptors, ureliability, urepeatability)
 
 
 
