@@ -258,7 +258,7 @@ class Custom_Quad_L2Net_ConfCFS (Quad_L2Net):
 
 
 
-class Custom_2_Quad_L2Net_ConfCFS(Custom_Quad_L2Net):
+class Custom_2_Quad_L2Net_ConfCFS(Custom_Quad_L2Net_GCU):
     """ Same than Quad_L2Net, with 2 confidence maps for repeatability and reliability.
     """
     def __init__(self, **kw ):
