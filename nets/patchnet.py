@@ -211,7 +211,7 @@ class Quad_L2Net_ConfCFS (Quad_L2Net):
 
 
 
-class Custom_Quad_L2Net (PatchNet):
+class Custom_Quad_L2Net_GCU (PatchNet):
     """ Same than L2_Net, but replace the final 8x8 conv by 3 successive 2x2 convs.
     """
     def __init__(self, dim=128, mchan=4, relu22=False, **kw ):
@@ -230,12 +230,11 @@ class Custom_Quad_L2Net (PatchNet):
 
 
 
-
-class Custom_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
+class Custom_Quad_L2Net_ConfCFS (Quad_L2Net):
     """ Same than Quad_L2Net, with 2 confidence maps for repeatability and reliability.
     """
     def __init__(self, **kw ):
-        Custom_Quad_L2Net.__init__(self, **kw)
+        Quad_L2Net.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         # repeatability classifier: for some reasons it's a softplus, not a softmax!
@@ -246,7 +245,7 @@ class Custom_Quad_L2Net_ConfCFS (Custom_Quad_L2Net):
         assert self.ops, "You need to add convolutions first"
         # descriptors = []
         for op in self.ops:
-            # if op._get_name() == "ReLU":
+            if op._get_name() == "ReLU":
             # if op._get_name() == "GrowingCosineUnit":
                 # descriptors.append(x)
             x = op(x)
