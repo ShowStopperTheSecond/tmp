@@ -74,17 +74,14 @@ class BaseNet (nn.Module):
                     reliability = self.softmax( ureliability ))
 
     def normalize2(self, x, ureliability, urepeatability):
-        if len(x) == 2:
-            ret_val = dict(descriptors = F.normalize(x, p=2, dim=1),
-                    repeatability = self.softmax( urepeatability ),
-                    reliability = self.softmax( ureliability ))
-        else:
-            normalized_xs = []
-            for feats in x:
-                normalized_xs.append( F.normalize(feats, p=2, dim=1))
-            ret_val = dict(descriptors = normalized_xs,
-                    repeatability = self.softmax( urepeatability ),
-                    reliability = self.softmax( ureliability ))
+     
+        normalized_xs = []
+        for feats in x:
+            normalized_xs.append( F.normalize(feats, p=2, dim=1))
+        ret_val = dict(descriptors = normalized_xs,
+                repeatability = self.softmax( urepeatability ),
+                reliability = self.softmax( ureliability ))
+        return ret_val
 
 
     def forward_one(self, x):
