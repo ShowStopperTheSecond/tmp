@@ -159,7 +159,7 @@ class CustomPixelAPLoss (nn.Module):
 
 
 
-class ReliabilityLoss (CustomPixelAPLoss):
+class CustomReliabilityLoss (CustomPixelAPLoss):
     """ same than PixelAPLoss, but also train a pixel-wise confidence
         that this pixel is going to have a good AP.
     """
