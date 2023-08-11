@@ -57,7 +57,7 @@ class ReliabilityLoss (PixelAPLoss):
         self.cosine_similarity =  nn.CosineSimilarity(dim=1, eps=1e-6)
 
     def loss_from_ap(self, ap, rel):
-        return ap  + (1 - self.cosine_similarity(ap, rel))
+        return 1- ap  + (1 - self.cosine_similarity(ap, rel))
         # return 1 - ap*rel - (1-rel)*self.base
 
 
