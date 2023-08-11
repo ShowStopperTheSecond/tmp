@@ -341,6 +341,7 @@ class Custom_3_Fast_Quad_L2Net (PatchNet):
     def __init__(self, dim=128, mchan=4, relu22=False, downsample_factor=2, **kw ):
 
         PatchNet.__init__(self, **kw)
+        self.downsample_factor = downsample_factor
         self._add_conv(  8*mchan,relu=False, gcu=True)
         self._add_conv(  8*mchan,relu=False, gcu=True)
         self._add_conv( 16*mchan, k_pool = downsample_factor,relu=False, gcu=True) # added avg pooling to decrease img resolution
@@ -354,7 +355,6 @@ class Custom_3_Fast_Quad_L2Net (PatchNet):
         self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=True)
         
         # Go back to initial image resolution with upsampling
-        self.ops.append(torch.nn.Upsample(scale_factor=downsample_factor, mode='bilinear', align_corners=False))
         
         self.out_dim = dim
         
@@ -374,12 +374,19 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net):
         
     def forward_one(self, x):
         assert self.ops, "You need to add convolutions first"
+        descriptors = []
         for op in self.ops:
+            if op._get_name() == "ReLU":
+            # if op._get_name() == "GrowingCosineUnit":
+               descriptors.append(
+                torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
             x = op(x)
+
         # compute the confidence maps
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
-        return self.normalize(x, ureliability, urepeatability)
+
+        return self.normalize2(descriptors[-4:], ureliability, urepeatability)
 
 
 
