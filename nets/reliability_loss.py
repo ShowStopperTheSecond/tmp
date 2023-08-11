@@ -74,7 +74,7 @@ class PixelPNPLoss(nn.Module):
         self.alpha = alpha
         self.anneal = anneal
         self.variant = variant
-        self.pnploss = PNPLoss(b, alpha,anneal)
+        self.pnploss = PNPLoss(b, alpha,anneal,variant)
         self.name = 'pixPNP'
         self.sampler = sampler
 
