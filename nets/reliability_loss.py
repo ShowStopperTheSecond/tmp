@@ -175,8 +175,9 @@ class CustomReliabilityLoss (CustomPixelAPLoss):
 
 
     def loss_from_ap(self, ap, rel):
-        return ap  + (1 - self.cosine_similarity(ap, rel))
+        return 1 - self.cosine_similarity(ap, rel) - (1-rel)*self.base
         # return 1 - ap*rel - (1-rel)*self.base
+
 
 
 
