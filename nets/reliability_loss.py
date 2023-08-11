@@ -159,18 +159,23 @@ class CustomPixelAPLoss (nn.Module):
 
 
 
-class CustomReliabilityLoss (CustomPixelAPLoss):
+class ReliabilityLoss (CustomPixelAPLoss):
     """ same than PixelAPLoss, but also train a pixel-wise confidence
         that this pixel is going to have a good AP.
     """
     def __init__(self, sampler, base=0.5, **kw):
-        PixelAPLoss.__init__(self, sampler, **kw)
+        CustomPixelAPLoss.__init__(self, sampler, **kw)
         assert 0 <= base < 1
         self.base = base
         self.name = 'reliability'
         self.cosine_similarity =  nn.CosineSimilarity(dim=1, eps=1e-6)
 
+
+
     def loss_from_ap(self, ap, rel):
+
         return ap  + (1 - self.cosine_similarity(ap, rel))
         # return 1 - ap*rel - (1-rel)*self.base
+
+
 
