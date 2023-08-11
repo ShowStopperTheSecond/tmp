@@ -110,7 +110,9 @@ class ReliabilityPNPLoss(PixelPNPLoss):
         self.name = 'reliability'
 
     def loss_from_pnp(self, pnp, rel):
-        return 1 - pnp * rel - (1 - rel) * self.base
+        # return 1 - pnp * rel - (1 - rel) * self.base
+        return 1 + pnp + 1/(pnp+rel) + self.base
+
 
 
 
