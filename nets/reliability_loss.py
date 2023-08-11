@@ -89,6 +89,7 @@ class PixelPNPLoss(nn.Module):
 
         pnp = self.pnploss(scores, gt)['loss']['losses']
         pnp =  pnp.view(msk.shape)
+        pnp = torch.nn.functional.normalize(pnp, p=2.0, dim=1, eps=1e-12, out=None)
 
 
         pixel_loss = self.loss_from_pnp(pnp, qconf)
@@ -105,7 +106,7 @@ class ReliabilityPNPLoss(PixelPNPLoss):
 
     def __init__(self, sampler, base=0.5, **kw):
         PixelPNPLoss.__init__(self, sampler, **kw)
-        # assert 0 <= base < 1
+        assert 0 <= base < 1
         self.base = base
         self.name = 'reliability'
 
