@@ -155,14 +155,6 @@ class CustomPixelAPLoss (nn.Module):
         
         loss = pixel_loss[msk].mean()
 
-        print("ap in CustomPixelAPLoss: ", ap.shape)
-        print("rel in CustomPixelAPLoss: ", qconf.shape)
-        print("loss in CustomPixelAPLoss: ", loss.shape)
-        print("pixel_loss in CustomPixelAPLoss: ", pixel_loss.shape)
-        print("scores in CustomPixelAPLoss: ", scores.shape)
-        print("gt in CustomPixelAPLoss: ", gt.shape)
-
-
 
         return loss
 
@@ -183,9 +175,6 @@ class CustomReliabilityLoss (CustomPixelAPLoss):
 
 
     def loss_from_ap(self, ap, rel):
-        print("ap in CustomReliabilityLoss: " ap.shape)
-        print("rel in CustomReliabilityLoss: " ap.shape)
-
         return ap  + (1 - self.cosine_similarity(ap, rel))
         # return 1 - ap*rel - (1-rel)*self.base
 
