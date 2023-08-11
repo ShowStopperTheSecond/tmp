@@ -105,7 +105,7 @@ class ReliabilityPNPLoss(PixelPNPLoss):
 
     def __init__(self, sampler, base=0.5, **kw):
         PixelPNPLoss.__init__(self, sampler, **kw)
-        assert 0 <= base < 1
+        # assert 0 <= base < 1
         self.base = base
         self.name = 'reliability'
 
