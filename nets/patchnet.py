@@ -377,7 +377,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net):
         descriptors = []
         for op in self.ops:
             # if op._get_name() == "ReLU":
-            if op._get_name() == "SELU":
+            if op._get_name() == "Mish":
             # if op._get_name() == "GrowingCosineUnit":
                descriptors.append(
                 torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
