@@ -485,11 +485,11 @@ class Custom_3_Fast_Quad_L2Net_selu (PatchNet):
         
 
         
-class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net_Mish):
+class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net_selu):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
-        Custom_3_Fast_Quad_L2Net_Mish.__init__(self, **kw)
+        Custom_3_Fast_Quad_L2Net_selu.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         
@@ -502,7 +502,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net_Mish):
         descriptors = []
         for op in self.ops:
             # if op._get_name() == "ReLU":
-            if op._get_name() == "Mish":
+            if op._get_name() == "SELU":
             # if op._get_name() == "GrowingCosineUnit":
                descriptors.append(
                 torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
