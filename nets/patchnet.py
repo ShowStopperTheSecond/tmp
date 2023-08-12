@@ -422,7 +422,7 @@ class Custom_3_Fast_Quad_L2Net_Mish (PatchNet):
         
 
         
-class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net_Mish):
+class Custom_3_Fast_Quad_L2Net_ConfCFS_Mish (Custom_3_Fast_Quad_L2Net_Mish):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
@@ -457,7 +457,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net_Mish):
 
 
 
-class Custom_3_Fast_Quad_L2Net_selu (PatchNet):
+class Custom_3_Fast_Quad_L2Net_Selu (PatchNet):
     """ Faster version of Quad l2 net, replacing one dilated conv with one pooling to diminish image resolution thus increase inference time
     Dilation  factors and pooling:
         1,1,1, pool2, 1,1, 2,2, 4, 8, upsample2
@@ -485,11 +485,11 @@ class Custom_3_Fast_Quad_L2Net_selu (PatchNet):
         
 
         
-class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net_selu):
+class Custom_3_Fast_Quad_L2Net_ConfCFS_Selu (Custom_3_Fast_Quad_L2Net_Selu):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
-        Custom_3_Fast_Quad_L2Net_selu.__init__(self, **kw)
+        Custom_3_Fast_Quad_L2Net_Selu.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         
