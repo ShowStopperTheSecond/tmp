@@ -355,7 +355,8 @@ class Custom_3_Fast_Quad_L2Net (PatchNet):
         self._add_conv(dim, k=2, stride=2, bn=False,relu=True, gcu=False, mish=False)
         
         # Go back to initial image resolution with upsampling
-        
+        # self.ops.append(torch.nn.Upsample(scale_factor=downsample_factor, mode='bilinear', align_corners=False))
+      
         self.out_dim = dim
         
 
@@ -382,6 +383,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS (Custom_3_Fast_Quad_L2Net):
                descriptors.append(
                 torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
             x = op(x)
+        x =  torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x)
 
         # compute the confidence maps
         ureliability = self.clf(x**2)
