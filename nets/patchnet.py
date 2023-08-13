@@ -648,7 +648,8 @@ class Custom_5_Fast_Quad_L2Net_ConfCFS_Selu (Custom_5_Fast_Quad_L2Net_Selu):
 
 
 
-class Custom_5_Fast_Quad_L2Net_Selu (PatchNet):
+
+class Custom_6_Fast_Quad_L2Net_Selu (PatchNet):
     """ Faster version of Quad l2 net, replacing one dilated conv with one pooling to diminish image resolution thus increase inference time
     Dilation  factors and pooling:
         1,1,1, pool2, 1,1, 2,2, 4, 8, upsample2
@@ -665,7 +666,7 @@ class Custom_5_Fast_Quad_L2Net_Selu (PatchNet):
         self._add_conv( 32*mchan,relu=False, gcu=False, selu=True)
         
         # replace last 8x8 convolution with 3 2x2 convolutions
-        self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, selu=True)
+        # self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, selu=True)
         # self._add_conv( 32*mchan, k=2, stride=2, relu=False, selu=relu22)
         self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=False, selu=True)
         
@@ -676,11 +677,11 @@ class Custom_5_Fast_Quad_L2Net_Selu (PatchNet):
         
 
         
-class Custom_6_Fast_Quad_L2Net_ConfCFS_Selu (Custom_4_Fast_Quad_L2Net_Selu):
+class Custom_5_Fast_Quad_L2Net_ConfCFS_Selu (Custom_6_Fast_Quad_L2Net_Selu):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
-        Custom_5_Fast_Quad_L2Net_Selu.__init__(self, **kw)
+        Custom_6_Fast_Quad_L2Net_Selu.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         
@@ -705,4 +706,7 @@ class Custom_6_Fast_Quad_L2Net_ConfCFS_Selu (Custom_4_Fast_Quad_L2Net_Selu):
         urepeatability = self.sal(x**2)
 
         return self.normalize2(descriptors[-5:], ureliability, urepeatability)
+
+
+
 
