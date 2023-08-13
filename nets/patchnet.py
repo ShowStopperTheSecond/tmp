@@ -677,7 +677,7 @@ class Custom_6_Fast_Quad_L2Net_Selu (PatchNet):
         
 
         
-class Custom_5_Fast_Quad_L2Net_ConfCFS_Selu (Custom_6_Fast_Quad_L2Net_Selu):
+class Custom_6_Fast_Quad_L2Net_ConfCFS_Selu (Custom_6_Fast_Quad_L2Net_Selu):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
