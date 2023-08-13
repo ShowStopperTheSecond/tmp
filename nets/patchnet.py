@@ -475,7 +475,7 @@ class Custom_3_Fast_Quad_L2Net_Selu (PatchNet):
         
         # replace last 8x8 convolution with 3 2x2 convolutions
         self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, selu=True)
-        self._add_conv( 32*mchan, k=2, stride=2, relu=False, selu=relu22)
+        # self._add_conv( 32*mchan, k=2, stride=2, relu=False, selu=relu22)
         self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=False, selu=True)
         
         # Go back to initial image resolution with upsampling
@@ -513,7 +513,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS_Selu (Custom_3_Fast_Quad_L2Net_Selu):
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize2(descriptors[-5:], ureliability, urepeatability)
+        return self.normalize2(descriptors[-1:], ureliability, urepeatability)
 
 
 
