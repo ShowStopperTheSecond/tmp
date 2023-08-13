@@ -466,17 +466,17 @@ class Custom_3_Fast_Quad_L2Net_Selu (PatchNet):
 
         PatchNet.__init__(self, **kw)
         self.downsample_factor = downsample_factor
-        self._add_conv(  8*mchan,relu=False, gcu=False, selu=True)
-        self._add_conv(  8*mchan,relu=False, gcu=False, selu=True)
-        self._add_conv( 16*mchan, k_pool = downsample_factor,relu=False, gcu=False, selu=True) # added avg pooling to decrease img resolution
-        self._add_conv( 16*mchan,relu=False, gcu=False, selu=True)
-        self._add_conv( 32*mchan,relu=False, gcu=False, stride=2, selu=True)
-        self._add_conv( 32*mchan,relu=False, gcu=False, selu=True)
+        self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
+        self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
+        self._add_conv( 16*mchan, k_pool = downsample_factor,relu=False, gcu=False, mish=True) # added avg pooling to decrease img resolution
+        self._add_conv( 16*mchan,relu=False, gcu=False, mish=True)
+        self._add_conv( 32*mchan,relu=False, gcu=False, stride=2, mish=True)
+        self._add_conv( 32*mchan,relu=False, gcu=False, mish=True)
         
         # replace last 8x8 convolution with 3 2x2 convolutions
-        self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, selu=True)
-        # self._add_conv( 32*mchan, k=2, stride=2, relu=False, selu=relu22)
-        self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=False, selu=True)
+        self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, mish=True)
+        self._add_conv( 32*mchan, k=2, stride=2, relu=False, mish=relu22)
+        self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=False, mish=True)
         
         # Go back to initial image resolution with upsampling
         # self.ops.append(torch.nn.Upsample(scale_factor=downsample_factor, mode='bilinear', align_corners=False))
