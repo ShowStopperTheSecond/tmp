@@ -537,7 +537,7 @@ class Custom_4_Fast_Quad_L2Net_Selu (PatchNet):
         self._add_conv( 16*mchan, k_pool = downsample_factor,relu=False, gcu=False, selu=True) # added avg pooling to decrease img resolution
         self._add_conv( 16*mchan,relu=False, gcu=False, selu=True)
         self._add_conv( 32*mchan,relu=False, gcu=False, stride=2, selu=True)
-        # self._add_conv( 32*mchan,relu=False, gcu=False, selu=True)
+        self._add_conv( 32*mchan,relu=False, gcu=False, selu=True)
         
         # replace last 8x8 convolution with 3 2x2 convolutions
         self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, selu=True)
