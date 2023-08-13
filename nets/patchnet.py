@@ -513,7 +513,7 @@ class Custom_3_Fast_Quad_L2Net_ConfCFS_Selu (Custom_3_Fast_Quad_L2Net_Selu):
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize2(descriptors[-1:], ureliability, urepeatability)
+        return self.normalize2(descriptors[-5:], ureliability, urepeatability)
 
 
 
