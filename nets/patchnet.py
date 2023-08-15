@@ -910,7 +910,7 @@ class Custom_6_Fast_Quad_L2Net_Mish (PatchNet):
     def __init__(self, dim=128, mchan=4, relu22=False, downsample_factor=2, **kw ):
 
         PatchNet.__init__(self, **kw)
-        self.bn = False
+        self.bn = True
         self.downsample_factor = downsample_factor
         self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
         self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
