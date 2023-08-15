@@ -676,7 +676,7 @@ class Custom_4_Fast_Quad_L2Net_Mish (PatchNet):
         
 
         
-class Custom_4_Fast_Quad_L2Net_ConfCFS_Mish (Custom_6_Fast_Quad_L2Net_Mish):
+class Custom_4_Fast_Quad_L2Net_ConfCFS_Mish (Custom_4_Fast_Quad_L2Net_Mish):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
