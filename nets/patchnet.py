@@ -793,7 +793,7 @@ class Custom_6_Fast_Quad_L2Net_Selu (PatchNet):
         # replace last 8x8 convolution with 3 2x2 convolutions
         self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, selu=True, bn=False)
         # self._add_conv( 32*mchan, k=2, stride=2, relu=False, selu=relu22)
-        self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=False, selu=True,, bn=False)
+        self._add_conv(dim, k=2, stride=2, bn=False,relu=False, gcu=False, selu=True, bn=False)
         
         # Go back to initial image resolution with upsampling
         # self.ops.append(torch.nn.Upsample(scale_factor=downsample_factor, mode='bilinear', align_corners=False))
