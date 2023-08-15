@@ -124,8 +124,8 @@ class PatchNet (BaseNet):
         if bn and self.bn: self.ops.append( self._make_bn(outd) )
         if relu: self.ops.append( nn.ReLU(inplace=True) )
         if gcu: self.ops.append(GrowingCosineUnit())
-        if selu: self.ops.append(nn.SELU(inplace=True))
-        if mish: self.ops.append(torch.nn.modules.activation.Mish(inplace=True))
+        if selu: self.ops.append(nn.SELU(inplace=False))
+        if mish: self.ops.append(torch.nn.modules.activation.Mish(inplace=False))
         # if softsign: self.opt.append(torch.nn.modules.activation.Softsign())
 
         self.curchan = outd
