@@ -984,9 +984,9 @@ class Custom_7_Fast_Quad_L2Net_Mish (PatchNet):
         self._add_conv( 32*mchan,relu=False, gcu=False, mish=True)
         
         # replace last 8x8 convolution with 3 2x2 convolutions
-        self._add_conv( 32*mchan, k=2, stride=4,relu=False, gcu=False, mish=True)
-        self._add_conv( 32*mchan, k=2, stride=4, relu=False, selu=relu22)
-        self._add_conv(dim, k=2, stride=8, bn=False,relu=False, gcu=False, mish=True)
+        # self._add_conv( 32*mchan, k=2, stride=4,relu=False, gcu=False, mish=True)
+        # self._add_conv( 32*mchan, k=2, stride=4, relu=False, selu=relu22)
+        self._add_conv(dim, k=2, stride=4, bn=False,relu=False, gcu=False, mish=True)
         
         # Go back to initial image resolution with upsampling
         # self.ops.append(torch.nn.Upsample(scale_factor=downsample_factor, mode='bilinear', align_corners=False))
