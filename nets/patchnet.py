@@ -782,6 +782,7 @@ class Custom_6_Fast_Quad_L2Net_Selu (PatchNet):
     def __init__(self, dim=128, mchan=4, relu22=False, downsample_factor=2, **kw ):
 
         PatchNet.__init__(self, **kw)
+        self.bn = False
         self.downsample_factor = downsample_factor
         self._add_conv(  8*mchan,relu=False, gcu=False, selu=True, bn=False)
         self._add_conv(  8*mchan,relu=False, gcu=False, selu=True, bn=False)
