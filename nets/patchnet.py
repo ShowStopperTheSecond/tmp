@@ -914,7 +914,7 @@ class Custom_6_Fast_Quad_L2Net_Mish (PatchNet):
         self.downsample_factor = downsample_factor
         self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
         self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
-        self._add_conv( 16*mchan, k_pool = downsample_factor,mish=True) # added avg pooling to decrease img resolution
+        self._add_conv( 16*mchan, k_pool = downsample_factor, relu=False, mish=True) # added avg pooling to decrease img resolution
         # self._add_conv( 16*mchan,relu=False, gcu=False, selu=True)
         self._add_conv( 32*mchan,relu=False, gcu=False, stride=2, mish=True)
         self._add_conv( 32*mchan,relu=False, gcu=False, mish=True)
