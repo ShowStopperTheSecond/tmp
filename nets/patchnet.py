@@ -646,7 +646,7 @@ class Custom_5_Fast_Quad_L2Net_ConfCFS_Selu (Custom_5_Fast_Quad_L2Net_Selu):
 
 
 
-class Custom_6_Fast_Quad_L2Net_Mish (PatchNet):
+class Custom_4_Fast_Quad_L2Net_Mish (PatchNet):
     """ Faster version of Quad l2 net, replacing one dilated conv with one pooling to diminish image resolution thus increase inference time
     Dilation  factors and pooling:
         1,1,1, pool2, 1,1, 2,2, 4, 8, upsample2
@@ -676,11 +676,11 @@ class Custom_6_Fast_Quad_L2Net_Mish (PatchNet):
         
 
         
-class Custom_6_Fast_Quad_L2Net_ConfCFS_Mish (Custom_6_Fast_Quad_L2Net_Mish):
+class Custom_4_Fast_Quad_L2Net_ConfCFS_Mish (Custom_6_Fast_Quad_L2Net_Mish):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
-        Custom_6_Fast_Quad_L2Net_Mish.__init__(self, **kw)
+        Custom_4_Fast_Quad_L2Net_Mish.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         
@@ -787,7 +787,7 @@ class Custom_6_Fast_Quad_L2Net_Selu (PatchNet):
         self._add_conv(  8*mchan,relu=False, gcu=False, selu=True)
         self._add_conv(  8*mchan,relu=False, gcu=False, selu=True, )
         self._add_conv( 16*mchan, k_pool = downsample_factor,relu=False, gcu=False, selu=True, ) # added avg pooling to decrease img resolution
-        self._add_conv( 16*mchan,relu=False, gcu=False, selu=True)
+        # self._add_conv( 16*mchan,relu=False, gcu=False, selu=True)
         self._add_conv( 32*mchan,relu=False, gcu=False, stride=2, selu=True, )
         self._add_conv( 32*mchan,relu=False, gcu=False, selu=True, )
         
