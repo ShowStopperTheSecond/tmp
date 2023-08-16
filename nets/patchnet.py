@@ -1303,7 +1303,7 @@ class Custom_12_Fast_Quad_L2Net_ConfCFS_Mish (Custom_12_Fast_Quad_L2Net_Mish):
     """ Fast r2d2 architecture
     """
     def __init__(self, **kw ):
-        Custom_1_Fast_Quad_L2Net_Mish.__init__(self, **kw)
+        Custom_12_Fast_Quad_L2Net_Mish.__init__(self, **kw)
         # reliability classifier
         self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
         
