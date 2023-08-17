@@ -1507,14 +1507,14 @@ class Custom_15_Fast_Quad_L2Net_ConfCFS_Mish (Custom_15_Fast_Quad_L2Net_Mish):
                 else:
                    descriptors.append(
                     torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
-                x = op(x)
+            x = op(x)
         x =  torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x)
 
         # compute the confidence maps
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize2(descriptors[3:], ureliability, urepeatability)
+        return self.normalize2(descriptors[2:], ureliability, urepeatability)
 
 
 
