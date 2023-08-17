@@ -1390,3 +1390,64 @@ class Custom_13_Fast_Quad_L2Net_ConfCFS_Mish (Custom_13_Fast_Quad_L2Net_Mish):
 
         return self.normalize2(descriptors, ureliability, urepeatability)
 
+
+
+
+class Custom_14_Fast_Quad_L2Net_Mish (PatchNet):
+    """ Faster version of Quad l2 net, replacing one dilated conv with one pooling to diminish image resolution thus increase inference time
+    Dilation  factors and pooling:
+        1,1,1, pool2, 1,1, 2,2, 4, 8, upsample2
+    """
+    def __init__(self, dim=128, mchan=4, relu22=False, downsample_factor=2, **kw ):
+
+        PatchNet.__init__(self, **kw)
+        self.downsample_factor = downsample_factor
+        self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
+        self._add_conv(  8*mchan,relu=False, gcu=False, mish=True)
+        self._add_conv( 16*mchan, relu=False, k_pool = downsample_factor, mish=True, pool_type='avg') # added avg pooling to decrease img resolution
+        self._add_conv( 16*mchan,relu=False, gcu=False, dilation=2, mish=True)
+        self._add_conv( 32*mchan,relu=False, gcu=False, dilation=3, mish=True)
+        self._add_conv( 32*mchan,relu=False, gcu=False, dilation=4,mish=True)
+        
+        # replace last 8x8 convolution with 3 2x2 convolutions
+        # self._add_conv( 32*mchan, k=2, stride=2,relu=False, gcu=False, mish=True)
+        # self._add_conv( 32*mchan, k=2, stride=2, relu=False, selu=relu22)
+        self._add_conv(dim, k=5, bn=False,relu=False, dilation=5, mish=True)
+        
+        # Go back to initial image resolution with upsampling
+        # self.ops.append(torch.nn.Upsample(scale_factor=downsample_factor, mode='bilinear', align_corners=False))
+      
+        self.out_dim = dim
+        
+
+        
+class Custom_14_Fast_Quad_L2Net_ConfCFS_Mish (Custom_14_Fast_Quad_L2Net_Mish):
+    """ Fast r2d2 architecture
+    """
+    def __init__(self, **kw ):
+        Custom_14_Fast_Quad_L2Net_Mish.__init__(self, **kw)
+        # reliability classifier
+        self.clf = nn.Conv2d(self.out_dim, 2, kernel_size=1)
+        
+        # repeatability classifier: for some reasons it's a softplus, not a softmax!
+        # Why? I guess it's a mistake that was left unnoticed in the code for a long time...
+        self.sal = nn.Conv2d(self.out_dim, 1, kernel_size=1) 
+        
+    def forward_one(self, x):
+        assert self.ops, "You need to add convolutions first"
+        descriptors = []
+        for op in self.ops:
+            # if op._get_name() == "ReLU":
+            if op._get_name() == "Mish":
+            # if op._get_name() == "GrowingCosineUnit":
+               descriptors.append(
+                torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
+            x = op(x)
+        x =  torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x)
+
+        # compute the confidence maps
+        ureliability = self.clf(x**2)
+        urepeatability = self.sal(x**2)
+
+        return self.normalize2(descriptors, ureliability, urepeatability)
+
