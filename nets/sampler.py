@@ -136,6 +136,94 @@ class SubSampler(FullSampler):
 
 
 
+
+
+
+class SubSamplerMultiDescriptor(FullSampler):
+    """ pixels are selected in an uniformly spaced grid
+    """
+
+    def __init__(self, border, subq, subd, perimage=False):
+        FullSampler.__init__(self)
+        assert subq % subd == 0, 'subq must be multiple of subd'
+        self.sub_q = subq
+        self.sub_d = subd
+        self.border = border
+        self.perimage = perimage
+
+    def __repr__(self):
+        return "SubSampler(border=%d, subq=%d, subd=%d, perimage=%d)" % (
+            self.border, self.sub_q, self.sub_d, self.perimage)
+
+    def __call__(self, all_feats, confs, aflow):
+        # feat1, conf1 = feats[0], (confs[0] if confs else None)
+        # # warp with optical flow in img1 coords
+        # feat2, mask2, conf2 = self._warp(feats, confs, aflow)
+        all_scores = []
+        all_gt = []
+        all_mask2 = []
+        all_qconf = []
+        for f1, f2  in zip(*all_feats):
+            feat1, conf1  = f1, ( confs[0] if confs else None)
+            # warp with optical flow in img1 coords
+            feat2, mask2, conf2 = self._warp([f1, f2], confs, aflow)
+
+            # subsample img1
+            slq = slice(self.border, -self.border or None, self.sub_q)
+            feat1 = feat1[:, :, slq, slq]
+            conf1 = conf1[:, :, slq, slq] if confs else None
+            # subsample img2
+            sld = slice(self.border, -self.border or None, self.sub_d)
+            feat2 = feat2[:, :, sld, sld]
+            mask2 = mask2[:, :, sld, sld]
+            conf2 = conf2[:, :, sld, sld] if confs else None
+
+            B, D, Hq, Wq = feat1.shape
+            B, D, Hd, Wd = feat2.shape
+
+            # compute gt
+            if self.perimage or self.sub_q != self.sub_d:
+                # compute ground-truth by comparing pixel indices
+                f = feats[0][0:1, 0] if self.perimage else feats[0][:, 0]
+                idxs = torch.arange(f.numel(), dtype=torch.int64, device=feat1.device).view(f.shape)
+                idxs1 = idxs[:, slq, slq].reshape(-1, Hq * Wq)
+                idxs2 = idxs[:, sld, sld].reshape(-1, Hd * Wd)
+                if self.perimage:
+                    gt = (idxs1[0].view(-1, 1) == idxs2[0].view(1, -1))
+                    gt = gt[None, :, :].expand(B, Hq * Wq, Hd * Wd)
+                else:
+                    gt = (idxs1.view(-1, 1) == idxs2.view(1, -1))
+            else:
+                gt = torch.eye(feat1[:, 0].numel(), dtype=torch.uint8, device=feat1.device)  # always binary for AP loss
+            all_gt.append(gt)
+            # compute all images together
+            queries = feat1.reshape(B, D, -1)  # B x D x (Hq x Wq)
+            database = feat2.reshape(B, D, -1)  # B x D x (Hd x Wd)
+            if self.perimage:
+                queries = queries.transpose(1, 2)  # B x (Hd x Wd) x D
+                scores = torch.bmm(queries, database)  # B x (Hq x Wq) x (Hd x Wd)
+            else:
+                queries = queries.transpose(1, 2).reshape(-1, D)  # (B x Hq x Wq) x D
+                database = database.transpose(1, 0).reshape(D, -1)  # D x (B x Hd x Wd)
+                scores = torch.matmul(queries, database)  # (B x Hq x Wq) x (B x Hd x Wd)
+            all_scores.append(scores)
+            # compute reliability
+            qconf = (conf1 + conf2) / 2 if confs else None
+            all_qconf.append(qconf)
+            all_mask2.append(mask2)
+        scores = torch.cat(all_scores)
+        gt = torch.cat(all_gt)
+        mask2 = torch.cat(all_mask2)
+        qconf = torch.cat(all_qconf)
+
+        assert gt.shape == scores.shape
+        return scores, gt, mask2, qconf
+
+
+
+
+
+
 class NghSampler2PNP(nn.Module):
     """ Similar to NghSampler, but doesnt warp the 2nd image.
     Distance to GT =>  0 ... pos_d ... neg_d ... ngh
