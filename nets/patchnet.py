@@ -1664,7 +1664,7 @@ class Custom_18_Fast_Quad_L2Net_Selu (PatchNet):
         self.downsample_factor = downsample_factor
         self._add_conv(  4*mchan,relu=False, gcu=False, selu=True)
         self._add_conv(  8*mchan,relu=False, gcu=False, selu=True)
-        self._add_conv( 12*mchan, k_pool = downsample_factor,relu=False, gcu=False, selu=True,pool_type='avg') # added avg pooling to decrease img resolution
+        self._add_conv( 12*mchan, k_pool = downsample_factor,relu=True, gcu=False, selu=True,pool_type='avg') # added avg pooling to decrease img resolution
         self._add_conv( 16*mchan,relu=False, gcu=False, selu=True)
         self._add_conv( 24*mchan,relu=False, gcu=False, stride=2, selu=True)
         # self._add_conv( 32*mchan,relu=False, gcu=False, selu=True)
