@@ -1766,14 +1766,14 @@ class Custom_19_Fast_Quad_L2Net_ConfCFS_Selu (Custom_16_Fast_Quad_L2Net_Selu):
         # descriptors = []
         for op in self.ops:
             # if op._get_name() == "ReLU":
-            if op._get_name() == "SELU":
+            # if op._get_name() == "SELU":
             # if op._get_name() == "GrowingCosineUnit":
             #     if x.shape[2:] == shape:
             #         descriptors.append(x)
             #     else:
             #        descriptors.append(
             #         torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
-            # x = op(x)
+            x = op(x)
         x =  torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x)
 
         # compute the confidence maps
