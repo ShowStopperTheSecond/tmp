@@ -1827,7 +1827,7 @@ class Custom_20_Fast_Quad_L2Net_ConfCFS_Mish (Custom_20_Fast_Quad_L2Net_Mish):
         # Why? I guess it's a mistake that was left unnoticed in the code for a long time...
         self.sal = nn.Conv2d(self.out_dim, 1, kernel_size=1) 
         
-     def forward_one(self, x):
+    def forward_one(self, x):
         assert self.ops, "You need to add convolutions first"
         # shape = x.shape[2:]
         # descriptors = []
