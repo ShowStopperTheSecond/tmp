@@ -1762,24 +1762,24 @@ class Custom_19_Fast_Quad_L2Net_ConfCFS_Selu (Custom_16_Fast_Quad_L2Net_Selu):
          
     def forward_one(self, x):
         assert self.ops, "You need to add convolutions first"
-        shape = x.shape[2:]
-        descriptors = []
+        # shape = x.shape[2:]
+        # descriptors = []
         for op in self.ops:
             # if op._get_name() == "ReLU":
             if op._get_name() == "SELU":
             # if op._get_name() == "GrowingCosineUnit":
-                if x.shape[2:] == shape:
-                    descriptors.append(x)
-                else:
-                   descriptors.append(
-                    torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
-            x = op(x)
+            #     if x.shape[2:] == shape:
+            #         descriptors.append(x)
+            #     else:
+            #        descriptors.append(
+            #         torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x))
+            # x = op(x)
         x =  torch.nn.Upsample(scale_factor=self.downsample_factor, mode='bilinear', align_corners=False)(x)
 
         # compute the confidence maps
         ureliability = self.clf(x**2)
         urepeatability = self.sal(x**2)
 
-        return self.normalize2(descriptors[-1:], ureliability, urepeatability)
+        return self.normalize2([x], ureliability, urepeatability)
 
 
