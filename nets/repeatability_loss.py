@@ -185,8 +185,8 @@ class SharpenPeak(nn.Module):
 
         # normalize
         sali1, sali2 = repeatability
-        locsMaxima1 = self.nms(sali1)
-        locsMaxima2 = self.nms(sali2)
+        locsMaxima1 = self.nms(sali1).float()
+        locsMaxima2 = self.nms(sali2).float()
 
         return  torch.sum((locsMaxima1 - sali1)**2 + (locsMaxima2-sali1)**2 )
 
