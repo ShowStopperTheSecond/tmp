@@ -10,8 +10,8 @@ import torch.nn.functional as F
 
 from nets.sampler import FullSampler
 
-import matplotlib.pyplot as plt
-import matplotlib
+# import matplotlib.pyplot as plt
+# import matplotlib
 
 '''
 
@@ -41,7 +41,7 @@ template
 
 '''
 # matplotlib.use('Qt5Agg')
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 # matplotlib.use("nbAgg")
 
 class CosimLoss (nn.Module):
